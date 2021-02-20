@@ -33,10 +33,12 @@ public class MainActivity extends AppCompatActivity {
 
         String txt4 = "<custom><span style=\"color: #E9B159; font-size: 12px;\">AA<span style=\"font-size: 25px;\">BB<span style=\"color: #FF3359; font-size: 12px;\">AA<span style=\"font-size: 25px;\">BB</span>DD</span></span>CC</span></custom>";
         String txt5 = "<custom><span style=\"color: #E9B159; font-size: 12px;\">AA<span style=\"font-size: 25px;\">BB</span>CC</span></custom>";
+        String txt6 = "<custom><span style=\"color: #E9B159; font-size: 16px;\">AA</span><span style=\"font-size: 20px;\">BB</span></custom>";
+        String txt7 = "<span style=\"color: #E9B159; background-color: #FF00FF;\">AA</span><span style=\"background-color: #FF0000;\">BB</span>";
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                tv.setText(HtmlUtil.fromHtml(txt4, MainActivity.this));
+                tv.setText(HtmlUtil.fromHtml(txt5,MainActivity.this));
             }
         });
 

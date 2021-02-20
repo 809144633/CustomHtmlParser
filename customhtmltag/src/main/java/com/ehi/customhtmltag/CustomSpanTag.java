@@ -20,8 +20,8 @@ import org.xml.sax.Attributes;
  * @author: 37745 <a href="ziju.wang@1hai.cn">Contact me.</a>
  * @date: 2020/6/22 13:38
  * @desc: e.g."<custom><span>普通样式文本</span><br><span style=\"color: #ff7e00; font-size: 20px;\">黄色文字，字号偏大。</span>" +
- *                 "<span style=\"color: #27ad9a; font-size: 20px;font-weight:bold\">" +
- *                 "后面的绿色文字，字体加粗的。</span><br><del>中间的删除线文本</del></custom>"
+ * "<span style=\"color: #27ad9a; font-size: 20px;font-weight:bold\">" +
+ * "后面的绿色文字，字体加粗的。</span><br><del>中间的删除线文本</del></custom>"
  */
 public class CustomSpanTag extends BaseHtmlTag {
     public static final String SPAN = "span";
@@ -39,18 +39,18 @@ public class CustomSpanTag extends BaseHtmlTag {
         int fontSize = getFontSize(fontSizeStr);
         if (fontSize != -1) {
             //接收数据为px单位但因为iOS、Android使用单位不同且无法使用px实现适配，暂时采用15px当做15dp进行处理
-            setStartStyle(originEditable, new CustomAbsoluteSizeSpan(fontSize, true));
+            setStartStyle(originEditable, new FontSize(fontSize));
         }
         int textColor = parseColor(textColorStr);
         if (textColor != -1) {
-            setStartStyle(originEditable, new CustomForegroundColorSpan(textColor));
+            setStartStyle(originEditable, new ForegroundColor(textColor));
         }
         int backgroundColor = parseColor(backgroundColorStr);
         if (backgroundColor != -1) {
-            setStartStyle(originEditable, new CustomBackgroundColorSpan(backgroundColor));
+            setStartStyle(originEditable, new BackgroundColor(backgroundColor));
         }
         if (fontWeight != null && fontWeight.toLowerCase().equals(BOLD)) {
-            setStartStyle(originEditable, new CustomFontBoldSpan());
+            setStartStyle(originEditable, new Bold());
         }
     }
 
@@ -81,26 +81,22 @@ public class CustomSpanTag extends BaseHtmlTag {
 
     @Override
     public void endHandleTag(Editable originEditable) {
-        CustomAbsoluteSizeSpan[] absoluteSizeSpans = getSpansFromEdit(originEditable, CustomAbsoluteSizeSpan.class);
-        if (checkIsAllowSetEditableSpans(absoluteSizeSpans)) {
-            setEditableSpans(originEditable, absoluteSizeSpans);
+        FontSize fontSizeSpan = getLastSpanFromEdit(originEditable, FontSize.class);
+        if (fontSizeSpan != null) {
+            setEditableSpans(originEditable, fontSizeSpan, new AbsoluteSizeSpan(fontSizeSpan.fontSize, true));
         }
-        CustomForegroundColorSpan[] foregroundColorSpans = getSpansFromEdit(originEditable, CustomForegroundColorSpan.class);
-        if (checkIsAllowSetEditableSpans(foregroundColorSpans)) {
-            setEditableSpans(originEditable, foregroundColorSpans);
+        ForegroundColor foregroundColorSpan = getLastSpanFromEdit(originEditable, ForegroundColor.class);
+        if (foregroundColorSpan != null) {
+            setEditableSpans(originEditable, foregroundColorSpan, new ForegroundColorSpan(foregroundColorSpan.foregroundColor));
         }
-        CustomBackgroundColorSpan[] backgroundColorSpans = getSpansFromEdit(originEditable, CustomBackgroundColorSpan.class);
-        if (checkIsAllowSetEditableSpans(backgroundColorSpans)) {
-            setEditableSpans(originEditable, backgroundColorSpans);
+        BackgroundColor backgroundColorSpan = getLastSpanFromEdit(originEditable, BackgroundColor.class);
+        if (backgroundColorSpan != null) {
+            setEditableSpans(originEditable, backgroundColorSpan, new BackgroundColorSpan(backgroundColorSpan.backgroundColor));
         }
-        CustomFontBoldSpan[] boldSpans = getSpansFromEdit(originEditable, CustomFontBoldSpan.class);
-        if (checkIsAllowSetEditableSpans(boldSpans)) {
-            setEditableSpans(originEditable, boldSpans);
+        Bold boldSpans = getLastSpanFromEdit(originEditable, Bold.class);
+        if (boldSpans != null) {
+            setEditableSpans(originEditable, boldSpans, new CustomFontBoldSpan());
         }
-    }
-
-    private boolean checkIsAllowSetEditableSpans(Object[] target) {
-        return target != null && target.length > 0;
     }
 
     private void setStartStyle(Editable editable, Object mark) {
@@ -109,55 +105,42 @@ public class CustomSpanTag extends BaseHtmlTag {
         editable.setSpan(mark, length, length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 
-    private void setEditableSpans(Editable editable, Object[] spans) {
-        for (int i = 0; i < spans.length; i++) {
-            Object span = spans[i];
-            int start = editable.getSpanStart(span);
-            int end = editable.getSpanEnd(span);
-            int finalEndIndex = editable.length();
-            if (i != 0 && start != end) {
-                finalEndIndex = end;
-            }
-            if (start != finalEndIndex) {
-                editable.setSpan(span, start, finalEndIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    private void setEditableSpans(Editable editable, Object mark, Object... spans) {
+        int start = editable.getSpanStart(mark);
+        editable.removeSpan(mark);
+        int end = editable.length();
+        if (start != end) {
+            for (Object span : spans) {
+                editable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
     }
 
-    private static class CustomForegroundColorSpan extends ForegroundColorSpan {
+    private static class Bold {
 
-        public CustomForegroundColorSpan(int color) {
-            super(color);
-        }
+    }
 
-        public CustomForegroundColorSpan(@NonNull Parcel src) {
-            super(src);
+    private static class FontSize {
+        int fontSize;
+
+        public FontSize(int fontSize) {
+            this.fontSize = fontSize;
         }
     }
 
-    private static class CustomAbsoluteSizeSpan extends AbsoluteSizeSpan {
+    private static class BackgroundColor {
+        int backgroundColor;
 
-        public CustomAbsoluteSizeSpan(int size) {
-            super(size);
-        }
-
-        public CustomAbsoluteSizeSpan(int size, boolean dip) {
-            super(size, dip);
-        }
-
-        public CustomAbsoluteSizeSpan(@NonNull Parcel src) {
-            super(src);
+        public BackgroundColor(int backgroundColor) {
+            this.backgroundColor = backgroundColor;
         }
     }
 
-    private static class CustomBackgroundColorSpan extends BackgroundColorSpan {
+    private static class ForegroundColor {
+        int foregroundColor;
 
-        public CustomBackgroundColorSpan(int color) {
-            super(color);
-        }
-
-        public CustomBackgroundColorSpan(@NonNull Parcel src) {
-            super(src);
+        public ForegroundColor(int foregroundColor) {
+            this.foregroundColor = foregroundColor;
         }
     }
 

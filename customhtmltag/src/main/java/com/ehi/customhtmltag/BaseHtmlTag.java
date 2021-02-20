@@ -57,12 +57,12 @@ public abstract class BaseHtmlTag {
         }
     }
 
-    public static <T> T[] getSpansFromEdit(Editable editable, Class<T> kind) {
+    public static <T> T getLastSpanFromEdit(Editable editable, Class<T> kind) {
         T[] objs = editable.getSpans(0, editable.length(), kind);
         if (objs.length == 0) {
             return null;
         } else {
-            return objs;
+            return objs[objs.length - 1];
         }
     }
 }
