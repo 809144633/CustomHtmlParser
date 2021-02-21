@@ -76,6 +76,9 @@ public class CustomHtmlTagHandler implements Html.TagHandler, ContentHandler {
             case CUSTOM_TAG:
                 count--;
                 if (count == 0) {
+                    for (String key : tagMaps.keySet()) {
+                        tagMaps.get(key).finishHandleTag(originEditable);
+                    }
                     originXmlReader.setContentHandler(originContentHandler);
                     originXmlReader = null;
                     originContentHandler = null;

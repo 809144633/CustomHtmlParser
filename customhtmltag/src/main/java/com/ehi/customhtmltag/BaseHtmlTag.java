@@ -20,9 +20,27 @@ public abstract class BaseHtmlTag {
     protected static final String BOLD = "bold";
     protected static final String STYLE = "style";
 
+    /**
+     * 处理头标签<AAA>
+     *
+     * @param originEditable
+     * @param atts
+     */
     public abstract void startHandleTag(Editable originEditable, Attributes atts);
 
+    /**
+     * 处理尾标签</AAA>
+     *
+     * @param originEditable
+     */
     public abstract void endHandleTag(Editable originEditable);
+
+    /**
+     * </custom>标签结束处理
+     *
+     * @param originEditable
+     */
+    public abstract void finishHandleTag(Editable originEditable);
 
     public int getFontSize(String fontSize) {
         if (TextUtils.isEmpty(fontSize)) {
@@ -57,8 +75,15 @@ public abstract class BaseHtmlTag {
         }
     }
 
-    public static <T> T getLastSpanFromEdit(Editable editable, Class<T> kind) {
-        T[] objs = editable.getSpans(0, editable.length(), kind);
+    /**
+     * 获取editable中已经存在的span集合，获取最新添加的span
+     *
+     * @param start 匹配查询起点
+     * @param editable
+     * @param kind
+     */
+    public static <T> T getLastSpanFromEdit(int start, Editable editable, Class<T> kind) {
+        T[] objs = editable.getSpans(start, editable.length(), kind);
         if (objs.length == 0) {
             return null;
         } else {

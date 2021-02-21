@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 
 import org.xml.sax.Attributes;
 
+import java.util.Stack;
+
 /**
  * @author: 37745 <a href="ziju.wang@1hai.cn">Contact me.</a>
  * @date: 2020/6/22 13:38
@@ -25,6 +27,8 @@ import org.xml.sax.Attributes;
  */
 public class CustomSpanTag extends BaseHtmlTag {
     public static final String SPAN = "span";
+    private final Stack<Integer> spanStartIndexStack = new Stack<>();
+    private final Stack<StashedSpanStyle> stashSpanStyleStack = new Stack<>();
 
     @Override
     public void startHandleTag(Editable originEditable, Attributes atts) {
@@ -32,25 +36,33 @@ public class CustomSpanTag extends BaseHtmlTag {
         if (TextUtils.isEmpty(style)) {
             return;
         }
-        String textColorStr = getValueFromStyle(style, COLOR);
-        String fontSizeStr = getValueFromStyle(style, FONT_SIZE);
-        String backgroundColorStr = getValueFromStyle(style, BACKGROUND_COLOR);
-        String fontWeight = getValueFromStyle(style, FONT_WEIGHT);
-        int fontSize = getFontSize(fontSizeStr);
+        final String textColorStr = getValueFromStyle(style, COLOR);
+        final String fontSizeStr = getValueFromStyle(style, FONT_SIZE);
+        final String backgroundColorStr = getValueFromStyle(style, BACKGROUND_COLOR);
+        final String fontWeight = getValueFromStyle(style, FONT_WEIGHT);
+        final int fontSize = getFontSize(fontSizeStr);
+        boolean isFind = false;
         if (fontSize != -1) {
             //接收数据为px单位但因为iOS、Android使用单位不同且无法使用px实现适配，暂时采用15px当做15dp进行处理
-            setStartStyle(originEditable, new FontSize(fontSize));
+            setSpanStartIndex(originEditable, new FontSize(fontSize));
+            isFind = true;
         }
-        int textColor = parseColor(textColorStr);
+        final int textColor = parseColor(textColorStr);
         if (textColor != -1) {
-            setStartStyle(originEditable, new ForegroundColor(textColor));
+            setSpanStartIndex(originEditable, new ForegroundColor(textColor));
+            isFind = true;
         }
-        int backgroundColor = parseColor(backgroundColorStr);
+        final int backgroundColor = parseColor(backgroundColorStr);
         if (backgroundColor != -1) {
-            setStartStyle(originEditable, new BackgroundColor(backgroundColor));
+            setSpanStartIndex(originEditable, new BackgroundColor(backgroundColor));
+            isFind = true;
         }
         if (fontWeight != null && fontWeight.toLowerCase().equals(BOLD)) {
-            setStartStyle(originEditable, new Bold());
+            setSpanStartIndex(originEditable, new Bold());
+            isFind = true;
+        }
+        if (isFind) {
+            spanStartIndexStack.push(originEditable.length());
         }
     }
 
@@ -81,38 +93,81 @@ public class CustomSpanTag extends BaseHtmlTag {
 
     @Override
     public void endHandleTag(Editable originEditable) {
-        FontSize fontSizeSpan = getLastSpanFromEdit(originEditable, FontSize.class);
+        Integer index = 0;
+        if (!spanStartIndexStack.empty()) {
+            index = spanStartIndexStack.pop();
+            if (index == null) {
+                index = 0;
+            }
+        }
+        FontSize fontSizeSpan = getLastSpanFromEdit(index, originEditable, FontSize.class);
         if (fontSizeSpan != null) {
-            setEditableSpans(originEditable, fontSizeSpan, new AbsoluteSizeSpan(fontSizeSpan.fontSize, true));
+            tagSpans(originEditable, fontSizeSpan, new AbsoluteSizeSpan(fontSizeSpan.fontSize, true));
         }
-        ForegroundColor foregroundColorSpan = getLastSpanFromEdit(originEditable, ForegroundColor.class);
+        ForegroundColor foregroundColorSpan = getLastSpanFromEdit(index, originEditable, ForegroundColor.class);
         if (foregroundColorSpan != null) {
-            setEditableSpans(originEditable, foregroundColorSpan, new ForegroundColorSpan(foregroundColorSpan.foregroundColor));
+            tagSpans(originEditable, foregroundColorSpan, new ForegroundColorSpan(foregroundColorSpan.foregroundColor));
         }
-        BackgroundColor backgroundColorSpan = getLastSpanFromEdit(originEditable, BackgroundColor.class);
+        BackgroundColor backgroundColorSpan = getLastSpanFromEdit(index, originEditable, BackgroundColor.class);
         if (backgroundColorSpan != null) {
-            setEditableSpans(originEditable, backgroundColorSpan, new BackgroundColorSpan(backgroundColorSpan.backgroundColor));
+            tagSpans(originEditable, backgroundColorSpan, new BackgroundColorSpan(backgroundColorSpan.backgroundColor));
         }
-        Bold boldSpans = getLastSpanFromEdit(originEditable, Bold.class);
+        Bold boldSpans = getLastSpanFromEdit(index, originEditable, Bold.class);
         if (boldSpans != null) {
-            setEditableSpans(originEditable, boldSpans, new CustomFontBoldSpan());
+            tagSpans(originEditable, boldSpans, new CustomFontBoldSpan());
         }
     }
 
-    private void setStartStyle(Editable editable, Object mark) {
+    @Override
+    public void finishHandleTag(Editable originEditable) {
+        while (!stashSpanStyleStack.empty()) {
+            final StashedSpanStyle stashedSpanStyle = stashSpanStyleStack.pop();
+            if (stashedSpanStyle == null) {
+                continue;
+            }
+            originEditable.setSpan(stashedSpanStyle.span, stashedSpanStyle.start, stashedSpanStyle.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+    }
+
+    /**
+     * 标记span样式的起点位置
+     *
+     * @param editable
+     * @param mark
+     */
+    private void setSpanStartIndex(Editable editable, Object mark) {
         // startHandle阶段 setSpan只做标记位置作用不实现具体效果
         int length = editable.length();
         editable.setSpan(mark, length, length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 
-    private void setEditableSpans(Editable editable, Object mark, Object... spans) {
+    /**
+     * 根据起点终点保存span样式
+     *
+     * @param editable
+     * @param mark
+     * @param spans
+     */
+    private void tagSpans(Editable editable, Object mark, Object... spans) {
         int start = editable.getSpanStart(mark);
         editable.removeSpan(mark);
         int end = editable.length();
         if (start != end) {
             for (Object span : spans) {
-                editable.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                stashSpanStyleStack.push(new StashedSpanStyle(span, start, end));
             }
+        }
+    }
+
+    private static class StashedSpanStyle {
+        Object span;
+        int start;
+        int end;
+
+        public StashedSpanStyle(Object span, int start, int end) {
+            this.span = span;
+            this.start = start;
+            this.end = end;
         }
     }
 
