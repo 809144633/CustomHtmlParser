@@ -1,7 +1,6 @@
 package com.ehi.customhtmltag;
 
 import android.content.Context;
-import android.os.Build;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -29,17 +28,11 @@ public class HtmlUtil {
             return "";
         }
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                CustomHtmlTagHandler tagHandler = new CustomHtmlTagHandler();
-                tagHandler.registerTag(CustomSpanTag.SPAN, new CustomSpanTag());
-                return Html.fromHtml(htmlStr, Html.FROM_HTML_MODE_LEGACY, null, tagHandler);
-            } else {
-                return Html.fromHtml(htmlStr);
-            }
-
+            CustomHtmlTagHandler tagHandler = new CustomHtmlTagHandler();
+            tagHandler.registerTag(CustomSpanTag.SPAN, new CustomSpanTag());
+            return Html.fromHtml(htmlStr,null, tagHandler);
         } catch (Exception ignore) {
-
+            return Html.fromHtml(htmlStr);
         }
-        return htmlStr;
     }
 }
