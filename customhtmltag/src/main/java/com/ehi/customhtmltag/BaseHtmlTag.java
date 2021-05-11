@@ -64,14 +64,14 @@ public abstract class BaseHtmlTag {
      * @param colorString
      * @return
      */
-    public int parseColor(String colorString) {
+    public Integer parseColor(String colorString) {
         if (TextUtils.isEmpty(colorString)) {
-            return -1;
+            return null;
         }
         try {
             return Color.parseColor(colorString);
         } catch (IllegalArgumentException ex) {
-            return -1;
+            return null;
         }
     }
 

@@ -47,13 +47,13 @@ public class CustomSpanTag extends BaseHtmlTag {
             setSpanStartIndex(originEditable, new FontSize(fontSize));
             isFind = true;
         }
-        final int textColor = parseColor(textColorStr);
-        if (textColor != -1) {
+        final Integer textColor = parseColor(textColorStr);
+        if (textColor != null) {
             setSpanStartIndex(originEditable, new ForegroundColor(textColor));
             isFind = true;
         }
-        final int backgroundColor = parseColor(backgroundColorStr);
-        if (backgroundColor != -1) {
+        final Integer backgroundColor = parseColor(backgroundColorStr);
+        if (backgroundColor != null) {
             setSpanStartIndex(originEditable, new BackgroundColor(backgroundColor));
             isFind = true;
         }
