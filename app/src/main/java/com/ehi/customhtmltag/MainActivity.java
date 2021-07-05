@@ -38,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
         String txt6 = "<custom><span style=\"color: #E9B159; font-size: 16px;\">AA</span><span style=\"font-size: 20px;\">BB</span><img alt=\"上海鲜花港 - 郁金香\"/></custom>";
         String txt7 = "<span style=\"color: #E9B159; background-color: #FF00FF;\">AA</span><span style=\"background-color: #FF0000;\">BB</span>";
         String txt8 = "<custom><span style=\"color: #ffffff; font-size: 12px;\">套餐预计可省<span style=\"color: #FF7E00; font-size: 18px;\">582<span style=\"color: #ffffff; font-size: 12px;\">元起(不消费随时退)</span></span></span></custom>";
+        String txt9 = "!11";
+        String txt10 = "222";
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
