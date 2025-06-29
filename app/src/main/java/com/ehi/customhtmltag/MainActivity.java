@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tv = findViewById(R.id.tv);
         String txt = "<custom><span style=\"color:1111;font-size:50px;background-color:#FFFF00\">测试内容<span style=\"color:#AAFFAF;font-size:25px\"><u>测试内容</u></span></span><font color='#CCFFCC'>网上搜</font></custom>";
-        tv.setText(HtmlUtil.fromHtml(txt, this));
+        tv.setText(HtmlUtil.fromHtml(txt));
         btn = findViewById(R.id.btn);
         String txt2 = "<custom><p>话题故事内容，巴坎布副对戒多家分店。反馈到洛杉矶发动机弗兰克多家分" +
                 "店发的，都快疯了接口及打开了辅导费的，f'k'd'j'l'k'f'j'd'f'd</p><p><span style=\"color: " +
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                tv.setText(HtmlUtil.fromHtml(txt7,MainActivity.this));
+                tv.setText(HtmlUtil.fromHtml(txt7));
             }
         });
 
