@@ -1,6 +1,5 @@
 package com.ehi.customhtmltag;
 
-import android.content.Context;
 import android.os.Build;
 import android.text.Html;
 import android.text.TextUtils;
@@ -12,19 +11,13 @@ import android.text.TextUtils;
  */
 public class HtmlUtil {
 
+    /**
+     * Convert an HTML string into a {@link CharSequence}.
+     *
+     * @param htmlStr html content to parse
+     * @return styled text parsed from the provided HTML
+     */
     public static CharSequence fromHtml(String htmlStr) {
-        if (TextUtils.isEmpty(htmlStr)) {
-            return "";
-        }
-        try {
-            return Html.fromHtml(htmlStr);
-        } catch (Exception ignore) {
-
-        }
-        return htmlStr;
-    }
-
-    public static CharSequence fromHtml(String htmlStr, Context mContext) {
         if (TextUtils.isEmpty(htmlStr)) {
             return "";
         }
