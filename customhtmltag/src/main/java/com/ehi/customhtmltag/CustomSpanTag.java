@@ -41,27 +41,27 @@ public class CustomSpanTag extends BaseHtmlTag {
         final String backgroundColorStr = getValueFromStyle(style, BACKGROUND_COLOR);
         final String fontWeight = getValueFromStyle(style, FONT_WEIGHT);
         final int fontSize = getFontSize(fontSizeStr);
-        boolean isFind = false;
+        boolean found = false;
         if (fontSize != -1) {
             //接收数据为px单位但因为iOS、Android使用单位不同且无法使用px实现适配，暂时采用15px当做15dp进行处理
             setSpanStartIndex(originEditable, new FontSize(fontSize));
-            isFind = true;
+            found = true;
         }
         final int textColor = parseColor(textColorStr);
         if (textColor != -1) {
             setSpanStartIndex(originEditable, new ForegroundColor(textColor));
-            isFind = true;
+            found = true;
         }
         final int backgroundColor = parseColor(backgroundColorStr);
         if (backgroundColor != -1) {
             setSpanStartIndex(originEditable, new BackgroundColor(backgroundColor));
-            isFind = true;
+            found = true;
         }
         if (fontWeight != null && fontWeight.toLowerCase().equals(BOLD)) {
             setSpanStartIndex(originEditable, new Bold());
-            isFind = true;
+            found = true;
         }
-        if (isFind) {
+        if (found) {
             spanStartIndexStack.push(originEditable.length());
         }
     }
